@@ -6,7 +6,7 @@
 		body {
 			margin : 0;
 		}
-		#autojumpbutton {
+		#mouseSensivityInput {
 			position : absolute;
 			left : 20px;
 			top : 20px;
@@ -15,12 +15,11 @@
 </head>
 <body>
 
-	<button id = "autojumpbutton" onclick = "toggleAutoJump()"><h2>AutoJump : On</h2></button>
-
-	<script src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r123/three.min.js"></script>
-	<script src = "https://cdn.jsdelivr.net/npm/js.perlin@0.0.1/lib/perlin.min.js"></script>
-	<script src = "https://cdn.jsdelivr.net/npm/three-pointer-lock-controls@1.0.0/PointerLockControls.min.js"></script>
-	<script src = "https://cdnjs.cloudflare.com/ajax/libs/stats.js/r17/Stats.min.js"></script>
+	<input id="mouseSensivityInput"placeholder="Enter mouse sensivity value. Recommended: 0.002">
+	<script src = "three.js"></script>
+	<script src = "perlin.js"></script>
+	<script src = "PointerLockControls.js"></script>
+	<script src = "stats.js"></script>
  	<script type="text/javascript">
 
  		var stats = new Stats();
@@ -43,7 +42,7 @@
 
  		var scene = new THREE.Scene();
  		scene.background = new THREE.Color("rgba(0,127,255,1)");
- 		scene.fog = new THREE.Fog("rgba(0,127,255,1)", 200, 250);
+ 		scene.fog = new THREE.Fog("rgba(0,127,255,1)", 225, 275);
 		var renderer = new THREE.WebGLRenderer();
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		document.body.appendChild(renderer.domElement);
@@ -126,14 +125,14 @@
 		var zoff = 0;
 		var inc = 1/250;
 		var amplitude = 1000;
-		var renderDistance = 20;
+		var renderDistance = 25;
 		var chunkSize = 10;
 		camera.position.x = renderDistance * chunkSize / 2 * 5;
 		camera.position.z = renderDistance * chunkSize / 2 * 5;
 		
 		xoff = inc * camera.position.x / 5
 		zoff = inc * camera.position.z / 5
-		v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5
+		v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5 + Math.round(noise.perlin2(xoff/100, zoff/100) * amplitude / 500) * 5
 		camera.position.y = v+5
 
   		directionalLight=new THREE.DirectionalLight("rgb(255,255,255)",1)
@@ -172,7 +171,7 @@
 					for(var z = j * chunkSize; z < (j * chunkSize) + chunkSize; z++){
 						xoff = inc * x;
 						zoff = inc * z;
-						var v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5;
+						v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5 + Math.round(noise.perlin2(xoff/100, zoff/100) * amplitude / 500) * 5
 						chunk.push(new Block(x * 5, v, z * 5));
 						let matrix = new THREE.Matrix4().makeTranslation(
 							x * 5,
@@ -219,12 +218,15 @@
 
 		});
 
-		var movingSpeed = 0.4;
+		var movingSpeed = 10;
 		var ySpeed = 0;
 		var acc = 0.08;
 		function update(){
+			controls.speedFactor=mouseSensivityInput
 			directionalLight.castShadow=true
   			directionalLight.receiveShadow=true
+			light.castShadow=true
+  			light.receiveShadow=true
 			if(keys.includes("w")){
 				controls.moveForward(movingSpeed);
 				if(autoJump == false){
@@ -299,7 +301,7 @@
 			}
 
 			//Esta función genera terreno hacia -Z
-			if(camera.position.z <= lowestZBlock() + 400){ // 20 is 4 blocks
+			if(camera.position.z <= lowestZBlock() + 410){ // 20 is 4 blocks
 				/*
 					
 					[0], [3], [6],
@@ -324,7 +326,7 @@
 						for(var z = lowestZ - (chunkSize * 5); z < lowestZ; z = z + 5){
 							xoff = inc * x / 5;
 							zoff = inc * z / 5;
-							var v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5;
+							v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5 + Math.round(noise.perlin2(xoff/100, zoff/100) * amplitude / 500) * 5
 							chunk.push(new Block(x, v, z));
 						}
 					}
@@ -353,7 +355,7 @@
 			}
 
 			//Esta función genera terreno hacia +Z
-			if(camera.position.z >= highestZBlock() - 400){ // 20 is 4 blocks
+			if(camera.position.z >= highestZBlock() - 410){ // 20 is 4 blocks
 				/*
 					
 					[0], [3], [6],
@@ -377,7 +379,7 @@
 						for(var z = highestZ + 5; z < (highestZ + 5) + (chunkSize * 5); z = z + 5){
 							xoff = inc * x / 5;
 							zoff = inc * z / 5;
-							var v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5;
+							v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5 + Math.round(noise.perlin2(xoff/100, zoff/100) * amplitude / 500) * 5
 							chunk.push(new Block(x, v, z));
 						}
 					}
@@ -406,7 +408,7 @@
 
 
 			//Esta función genera terreno hacia +X
-			if(camera.position.x >= highestXBlock() - 400){ // 20 is 4 blocks
+			if(camera.position.x >= highestXBlock() - 410){ // 20 is 4 blocks
 				/*
 					
 					[0], [3], [6],
@@ -429,7 +431,7 @@
 						for(var x = highestX + 5; x < highestX + 5 + (chunkSize * 5); x = x + 5){
 							xoff = inc * x / 5;
 							zoff = inc * z / 5;
-							var v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5;
+							v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5 + Math.round(noise.perlin2(xoff/100, zoff/100) * amplitude / 500) * 5
 							chunk.push(new Block(x, v, z));
 						}
 					}
@@ -457,7 +459,7 @@
 			}
 
 			//Esta función genera terreno hacia -X
-			if(camera.position.x <= lowestXBlock() + 400){ // 20 is 4 blocks
+			if(camera.position.x <= lowestXBlock() + 410){ // 20 is 4 blocks
 				/*
 					
 					[0], [3], [6],
@@ -479,7 +481,7 @@
 						for(var x = lowestX - (chunkSize * 5); x < lowestX; x = x + 5){
 							xoff = inc * x / 5;
 							zoff = inc * z / 5;
-							var v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5;
+							v = Math.round(noise.perlin2(xoff, zoff) * amplitude / 5) * 5 + Math.round(noise.perlin2(xoff/100, zoff/100) * amplitude / 500) * 5
 							chunk.push(new Block(x, v, z));
 						}
 					}
@@ -565,6 +567,90 @@
 		}
 
 		GameLoop();
+
+/*
+Edit: I will give you and idea:
+
+(Type this in generation event):
+
+scene.remove(chunks)
+for(i in box){
+  scene.remove(box[i])
+}
+delete chunks
+fpx=floor(camera.position.x/10)*10
+chunks=figure
+for(x=fpx-renderDistance;x<fpx+renderDistance;x++){
+  for(y=fpx-renderDistance;y<fpx+renderDistance;y++){
+    for(z=fpx-renderDistance;z<fpx+renderDistance;z++){
+      id=Math.random()
+      box[id]={x:x,y:y,z:z}
+    }
+  }
+}
+for(i in box){
+  if(check_object(box[i].x,box[i].y+1,box[i].z)&&check_object(box[i].x,box[i].y-1,box[i].z)&&check_object(box[i].x,box[i].y,box[i].z+1)&&check_object(box[i].x,box[i].y,box[i].z-1)&&check_object(box[i].x+1,box[i].y,box[i].z)&&check_object(box[i].x-1,box[i].y,box[i].z)){
+    id=check_id(box[i].x,box[i].y,box[i].z)
+    delete box[id]
+  }
+}
+for(i in box){
+  box2[i]=new THREE.InstancedMesh(box,grass)
+  box2[i].position.set(box[i].x,box[i].y,box[i].z)
+  chunk.merge(box[id])  
+}
+scene.add(chunk)
+
+And this are the functions which I use:
+
+distance_to_object=(x,y,z,x2,y2,z2)=>{
+  return Math.pow(((x-x2)*(x-x2)+(y-y2)*(y-y2)+(z-z2)*(z-z2)),0.5)
+}
+check_into_object=(x,y,z,x2,y2,z2)=>{
+  if(
+    (x-0.4<x2+0.4&&x+0.4>x2-0.4)
+    &&
+    (y-0.4<y2+0.4&&y+0.4>y2-0.4)
+    &&
+    (z-0.4<z2+0.4&&z+0.4>z2-0.4)
+  ){
+    return true
+  }else{
+    return false
+  }
+}
+check_into_square=(x,y,z,x2,y2,z2,r)=>{
+  if(
+    (x-r<x2+r&&x+r>x2-r)
+    &&
+    (y-r<y2+r&&y+r>y2-r)
+    &&
+    (z-r<z2+r&&z+r>z2-r)
+  ){
+    return true
+  }else{
+    return false
+  }
+}
+check_object=(x,y,z)=>{
+  checked=false
+  for(i1 in cube){
+    if(check_into_object(x,y,z,cube[i1].position.x,cube[i1].position.y,cube[i1].position.z)){
+      checked=true
+    }
+  }
+  return checked
+}
+check_id=(x,y,z)=>{
+  id=0
+  for(i1 in cube){
+    if(check_into_object(x,y,z,cube[i1].position.x,cube[i1].position.y,cube[i1].position.z)){
+      id=i1
+    }
+  }
+  return id
+}
+*/
  	</script>
 </body>
 </html>
