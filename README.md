@@ -1,1 +1,1 @@
-# minecraft2
+https://minecraft2.vercel.app/
